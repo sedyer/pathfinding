@@ -1,7 +1,6 @@
-// pathfinding.cpp : Defines the entry point for the console application.
-//
-
 #include "stdafx.h"
+#include <iostream>
+using namespace std;
 
 int FindPath(
 	const int nStartX,
@@ -14,16 +13,37 @@ int FindPath(
 	int* pOutBuffer,
 	const int nOutBufferSize)
 {
-
-	return -1;
+	
 }
 
-void FindAdjacentNodes(
-	int index, 
+int getIndex(
+	int column,
+	int row,
+	int arrayWidth) 
+{
+	return row * arrayWidth + column;
+}
+
+int getRow(
+	int index,
+	int arrayWidth)
+{
+	return index / arrayWidth;
+}
+
+int getColumn(
+	int index,
+	int arrayWidth)
+{
+	return index % arrayWidth;
+}
+
+void findAdjacentNodes(
+	int index,
 	int* neighbors,
 	int arrayWidth,
-	int arrayHeight) 
-{  
+	int arrayHeight)
+{
 	//	0 1 2 3 4 5 6 7 8 9 10 11
 	//	0's neighbors are 1 and 4
 	//	4's neighbors are 0, 5, 8
@@ -34,12 +54,12 @@ void FindAdjacentNodes(
 
 	//get left neighbor
 
-	if (getColumn(index, arrayWidth) != 0) 
+	if (getColumn(index, arrayWidth) != 0)
 	{
 		neighbors[0] = index - 1;
 	}
-	else 
-	{ 
+	else
+	{
 		neighbors[0] = -1;
 	}
 
@@ -78,20 +98,6 @@ void FindAdjacentNodes(
 
 }
 
-int getRow(
-	int index,
-	int arrayWidth)
-{
-	return index / arrayWidth;
-}
-
-int getColumn(
-	int index,
-	int arrayWidth)
-{
-	return index % arrayWidth;
-}
-
 int main()
 {
 	unsigned char pMap[] = { 1,1,1,1,0,1,0,1,0,1,1,1 };
@@ -103,6 +109,14 @@ int main()
 	int pOutBuffer[12];
 
 	FindPath(0, 0, 1, 2, pMap, 4, 3, pOutBuffer, 12);
+
+	//	0 1 2 3
+	//	4 5 6 7
+	//	8 9 10 11
+
+	int neighbors[4];
+
+	findAdjacentNodes(6, neighbors, 4, 3);
 
     return 0;
 }
