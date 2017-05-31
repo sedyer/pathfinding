@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <list>  
 #include <map>
+#include <cmath>
 
 using namespace std;
 
@@ -80,9 +81,9 @@ public:
 
 	}
 
-	int getMin(map<int, int>& map) {
+	int getMinIndex(map<int, int>& map) {
 
-		int lowestIndex = map.begin()->first;
+		int lowestIndex = 0;
 		int lowestValue = map.begin()->second;
 
 		for each (pair<int, int> pair in map)
@@ -106,7 +107,21 @@ public:
 		}
 	}
 
-	void FindPath(
+	int estimateCost(int startIndex, int goalIndex, int width) {
+		int x1 = getColumn(startIndex, width);
+		int x2 = getColumn(goalIndex, width);
+		int y1 = getRow(startIndex, width);
+		int y2 = getRow(goalIndex, width);
+
+		int xdiff = x2 - x1;
+		int ydiff = y2 - y1;
+
+		int sumOfSquares = xdiff * xdiff + ydiff * ydiff;
+
+		return sqrt(sumOfSquares);
+	}
+
+	int FindPath(
 		const int nStartX,
 		const int nStartY,
 		const int nTargetX,
@@ -116,6 +131,7 @@ public:
 		const int nMapHeight,
 		int* pOutBuffer,
 		const int nOutBufferSize) {
+
 		list<int> closedSet, openSet, totalPath;
 
 		map <int, int> gScore, fScore, cameFrom;
@@ -126,19 +142,21 @@ public:
 
 		openSet = { startIndex };
 
+		closedSet = { -1 };
+
 		//gScore = cost of getting from start node to this node
 
 		gScore[startIndex] = 0;
 
 		//fScore = cost of getting from start node to the target not, by passing that node
 
-		fScore[startIndex] = 3; //estimateCost(startIndex, goalIndex);
+		fScore[startIndex] = estimateCost(startIndex, goalIndex, nMapWidth); //estimateCost(startIndex, goalIndex);
 
 		while (openSet.size() != 0)
 		{
-			int currentIndex = getMin(fScore);
+			int currentIndex = getMinIndex(fScore);
 
-			if (currentIndex = goalIndex) {
+			if (currentIndex == goalIndex) {
 				reconstructPath(totalPath, cameFrom, currentIndex);
 			}
 
@@ -150,7 +168,8 @@ public:
 
 			findAdjacentNodes(currentIndex, neighbors, nMapWidth, nMapHeight);
 
-			for (int i = 0; i < 4; i++) {
+			for (int i = 0; i < 3; i++) {
+
 				if (find(begin(closedSet), end(closedSet), neighbors[i]) != end(closedSet)) {
 					continue;
 				}
@@ -164,9 +183,11 @@ public:
 
 				cameFrom[neighbors[i]] = currentIndex;
 				gScore[neighbors[i]] = gScore[currentIndex];
-				fScore[neighbors[i]] = gScore[neighbors[i]] + 3; // estimateCost(neighbors[i], goalIndex);
+				fScore[neighbors[i]] = gScore[neighbors[i]] + estimateCost(neighbors[i], goalIndex, nMapWidth); // estimateCost(neighbors[i], goalIndex);
 			}
 		}
+
+		return 0;
 	}
 };
 
