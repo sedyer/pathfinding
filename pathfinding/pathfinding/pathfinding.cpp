@@ -9,23 +9,26 @@
 using namespace std;
 
 class pathfinding {
-public:
+
 	int getIndex(
 		int column,
 		int row,
 		int arrayWidth) {
+
 		return row * arrayWidth + column;
 	}
 
 	int getRow(
 		int index,
 		int arrayWidth) {
+
 		return index / arrayWidth;
 	}
 
 	int getColumn(
 		int index,
 		int arrayWidth) {
+
 		return index % arrayWidth;
 	}
 
@@ -35,15 +38,7 @@ public:
 		int arrayWidth,
 		int arrayHeight)
 	{
-		//	0 1 2 3 4 5 6 7 8 9 10 11
-		//	0's neighbors are 1 and 4
-		//	4's neighbors are 0, 5, 8
-
-		//	0 1 2 3
-		//	4 5 6 7
-		//	8 9 10 11
-
-		//get left neighbor
+		//left
 
 		if (getColumn(index, arrayWidth) != 0) {
 			neighbors[0] = index - 1;
@@ -52,7 +47,7 @@ public:
 			neighbors[0] = -1;
 		}
 
-		//get right neighbor
+		//right
 
 		if (getColumn(index, arrayWidth) != arrayWidth - 1) {
 			neighbors[1] = index + 1;
@@ -61,7 +56,7 @@ public:
 			neighbors[1] = -1;
 		}
 
-		//get top neighbor
+		//top
 
 		if (getRow(index, arrayWidth) != 0) {
 			neighbors[2] = index - arrayWidth;
@@ -70,7 +65,7 @@ public:
 			neighbors[2] = -1;
 		}
 
-		//get bottom neighbor
+		//bottom
 
 		if (getRow(index, arrayWidth) < arrayHeight - 1) {
 			neighbors[3] = index + arrayWidth;
@@ -81,14 +76,35 @@ public:
 
 	}
 
-	int getMinIndex(map<int, int>& map) {
+	void findAdjacentPassableNodes(
+		int index,
+		int* neighbors,
+		int arrayWidth,
+		int arrayHeight,
+		const unsigned char* pMap)
+	{
+		findAdjacentNodes(index, neighbors, arrayWidth, arrayHeight);
+
+		for (int i = 0; i < 4; i++) {
+			if (!isPassable(neighbors[i], pMap)) {
+				neighbors[i] = -1;
+			}
+		}
+	}
+
+	bool isPassable(int index, const unsigned char* pMap) {
+		return pMap[index] == 1;
+	}
+
+	int getMinIndex(map<int, double>& map) {
 
 		int lowestIndex = 0;
-		int lowestValue = map.begin()->second;
+		double lowestValue = map.begin()->second;
 
-		for each (pair<int, int> pair in map)
+		for each (pair<int, double> pair in map)
 		{
 			if (pair.second < lowestValue) {
+
 				lowestValue = pair.second;
 				lowestIndex = pair.first;
 			}
@@ -97,19 +113,23 @@ public:
 		return lowestIndex;
 	}
 
-	void reconstructPath(list<int>& totalPath, map<int, int>& cameFrom, int currentIndex) {
+	void reconstructPath(list<int>& totalPath, map<int, int>& cameFrom, int currentIndex, int startIndex) {
 
 		totalPath.push_back(currentIndex);
 
-		while (getWithDefault(cameFrom, currentIndex, -1) != -1) {
+		while (getWithDefault(cameFrom, currentIndex, -1) != -1 && cameFrom[currentIndex] != startIndex) {
+
 			currentIndex = cameFrom[currentIndex];
 			totalPath.push_back(currentIndex);
+			
 		}
 	}
 
-	int estimateCost(int startIndex, int goalIndex, int width) {
+	double estimateCost(int startIndex, int goalIndex, int width) {
+
 		int x1 = getColumn(startIndex, width);
 		int x2 = getColumn(goalIndex, width);
+
 		int y1 = getRow(startIndex, width);
 		int y2 = getRow(goalIndex, width);
 
@@ -121,6 +141,7 @@ public:
 		return sqrt(sumOfSquares);
 	}
 
+	public:
 	int FindPath(
 		const int nStartX,
 		const int nStartY,
@@ -134,60 +155,70 @@ public:
 
 		list<int> closedSet, openSet, totalPath;
 
-		map <int, int> gScore, fScore, cameFrom;
+		map <int, int> cameFrom;
+
+		map<int, double> gScore, fScore;
+
+		int neighbors[4];
 
 		int startIndex = getIndex(nStartX, nStartY, nMapWidth);
 
 		int goalIndex = getIndex(nTargetX, nTargetY, nMapWidth);
 
+		int shortestPathLength = -1;
+
 		openSet = { startIndex };
 
 		closedSet = { -1 };
 
-		//gScore = cost of getting from start node to this node
+		gScore[startIndex] = 0; //cost of getting from start node to this node
 
-		gScore[startIndex] = 0;
-
-		//fScore = cost of getting from start node to the target not, by passing that node
-
-		fScore[startIndex] = estimateCost(startIndex, goalIndex, nMapWidth); //estimateCost(startIndex, goalIndex);
+		fScore[startIndex] = estimateCost(startIndex, goalIndex, nMapWidth); //cost of getting from start node to the target node via this one
 
 		while (openSet.size() != 0)
 		{
 			int currentIndex = getMinIndex(fScore);
 
 			if (currentIndex == goalIndex) {
-				reconstructPath(totalPath, cameFrom, currentIndex);
+
+				reconstructPath(totalPath, cameFrom, currentIndex, startIndex);
+
+				shortestPathLength = totalPath.size();
+
+				for (int i = 0; i < shortestPathLength; i++) {
+					pOutBuffer[i] = totalPath.back();
+					totalPath.pop_back();
+				}
+
+				break;
 			}
 
 			openSet.remove(currentIndex);
 
 			closedSet.push_back(currentIndex);
 
-			int neighbors[4];
+			findAdjacentPassableNodes(currentIndex, neighbors, nMapWidth, nMapHeight, pMap);
 
-			findAdjacentNodes(currentIndex, neighbors, nMapWidth, nMapHeight);
+			for each (int n in neighbors) {
 
-			for (int i = 0; i < 3; i++) {
-
-				if (find(begin(closedSet), end(closedSet), neighbors[i]) != end(closedSet)) {
+				if (find(begin(closedSet), end(closedSet), n) != end(closedSet)) {
 					continue;
 				}
 
-				if (find(begin(openSet), end(openSet), neighbors[i]) == end(openSet)) {
-					openSet.push_back(neighbors[i]);
+				if (find(begin(openSet), end(openSet), n) == end(openSet)) {
+					openSet.push_back(n);
 				}
-				else if (gScore[currentIndex] >= gScore[neighbors[i]]) {
+				else if (gScore[currentIndex] >= gScore[n]) {
 					continue;
 				}
 
-				cameFrom[neighbors[i]] = currentIndex;
-				gScore[neighbors[i]] = gScore[currentIndex];
-				fScore[neighbors[i]] = gScore[neighbors[i]] + estimateCost(neighbors[i], goalIndex, nMapWidth); // estimateCost(neighbors[i], goalIndex);
+				cameFrom[n] = currentIndex;
+				gScore[n] = gScore[currentIndex];
+				fScore[n] = gScore[n] + estimateCost(n, goalIndex, nMapWidth);
 			}
 		}
 
-		return 0;
+		return shortestPathLength;
 	}
 };
 
@@ -195,23 +226,21 @@ int main()
 {
 	pathfinding pf;
 
-	unsigned char pMap[] = { 1,1,1,1,0,1,0,1,0,1,1,1 };
+	//unsigned char pMap[] = { 
+	//	1,1,1,1,
+	//	0,1,0,1,
+	//	0,1,1,1 
+	//};
 
-	//	1 1 1 1
-	//	0 1 0 1
-	//	0 1 1 1
+	unsigned char pMap[] = {
+		1,0,1,1,
+		1,0,0,1,
+		1,1,0,1
+	};
 
 	int pOutBuffer[12];
 
-	pf.FindPath(0, 0, 1, 2, pMap, 4, 3, pOutBuffer, 12);
-
-	//	0 1 2 3
-	//	4 5 6 7
-	//	8 9 10 11
-
-	int neighbors[4];
-
-	pf.findAdjacentNodes(6, neighbors, 4, 3);
+	int pathLength = pf.FindPath(0, 0, 1, 2, pMap, 4, 3, pOutBuffer, 12);
 
 	return 0;
 }
