@@ -121,7 +121,7 @@ class pathfinding {
 
 			currentIndex = cameFrom[currentIndex];
 			totalPath.push_back(currentIndex);
-			
+
 		}
 	}
 
@@ -141,7 +141,7 @@ class pathfinding {
 		return sqrt(sumOfSquares);
 	}
 
-	public:
+public:
 	int FindPath(
 		const int nStartX,
 		const int nStartY,
@@ -226,21 +226,31 @@ int main()
 {
 	pathfinding pf;
 
-	//unsigned char pMap[] = { 
-	//	1,1,1,1,
-	//	0,1,0,1,
-	//	0,1,1,1 
-	//};
-
 	unsigned char pMap[] = {
 		1,0,1,1,
-		1,0,0,1,
-		1,1,0,1
+		1,1,0,1,
+		0,1,0,1
 	};
 
-	int pOutBuffer[12];
+	int pOutBuffer[2];
 
 	int pathLength = pf.FindPath(0, 0, 1, 2, pMap, 4, 3, pOutBuffer, 12);
+
+	// handle too small buffer
+
+	int bufferSize = sizeof(pOutBuffer) / sizeof(pOutBuffer[0]);
+
+	if (pathLength > bufferSize) {
+
+		int* buffer = new int[pathLength];
+
+		int newbufferSize = sizeof(buffer) / sizeof(buffer[0]);
+
+		pf.FindPath(0, 0, 1, 2, pMap, 4, 3, buffer, pathLength);
+
+		int stop = 0;
+
+	}
 
 	return 0;
 }
