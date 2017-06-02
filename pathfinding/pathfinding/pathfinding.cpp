@@ -7,6 +7,7 @@
 #include <cmath>
 #include <float.h>
 #include <string>
+#include <math.h>
 
 using namespace std;
 
@@ -101,9 +102,11 @@ class pathfinding {
 	int getMinIndexInSet(map<int, double>& map, list<int>& set) {
 
 		int lowestIndex = set.back();
+
 		double lowestFScore = getWithDefault(map, lowestIndex, DBL_MAX);
 
 		for each (int i in set) {
+
 			double currentfScore = getWithDefault(map, i, DBL_MAX);
 
 			if (currentfScore < lowestFScore) {
@@ -129,45 +132,13 @@ class pathfinding {
 		}
 	}
 
-	//double estimateCost(int startIndex, int goalIndex, int width) {
-
-	//	int x1 = getColumn(startIndex, width);
-	//	int x2 = getColumn(goalIndex, width);
-
-	//	int y1 = getRow(startIndex, width);
-	//	int y2 = getRow(goalIndex, width);
-
-	//	int xdiff = x2 - x1;
-	//	int ydiff = y2 - y1;
-
-	//	int sumOfSquares = xdiff * xdiff + ydiff * ydiff;
-
-	//	return sqrt(sumOfSquares);
-	//}
-
-	//double heuristicWithTiebreaker(int startIndex, int goalIndex, int width) {
-
-	//	int x1 = getColumn(startIndex, width);
-	//	int x2 = getColumn(goalIndex, width);
-
-	//	int y1 = getRow(startIndex, width);
-	//	int y2 = getRow(goalIndex, width);
-
-	//	int xdiff = x2 - x1;
-	//	int ydiff = y2 - y1;
-
-	//	int sumOfSquares = xdiff * xdiff + ydiff * ydiff;
-
-	//	return sqrt(sumOfSquares) + getCoordinateHash(x1, x2, y1, y2);
-	//}
-
-	double getCoordinateHash(int x1, int x2, int y1, int y2) {
+	int getCoordinateHash(int x1, int x2, int y1, int y2) {
 
 	    return hash<string>()(to_string(x1 + x2 + y1 + y2));
 
 	}
 
-	int manhattanDistance(int startIndex, int goalIndex, int width) {
+	double manhattanDistance(int startIndex, int goalIndex, int width) {
 
 		int x1 = getColumn(startIndex, width);
 		int x2 = getColumn(goalIndex, width);
@@ -178,7 +149,9 @@ class pathfinding {
 		int xdiff = abs(x2 - x1);
 		int ydiff = abs(y2 - y1);
 
-		return xdiff + ydiff + getCoordinateHash(x1, x2, y1, y2);
+		double hash = getCoordinateHash(x1, x2, y1, y2);
+
+		return xdiff + ydiff + hash;
 	}
 
 public:
@@ -279,7 +252,7 @@ int main()
 
 	int pOutBuffer[24];
 
-	int pathLength = pf.FindPath(0, 0, 4, 5, pMap, 6, 6, pOutBuffer, 24);
+	int pathLength = pf.FindPath(0, 1, 4, 5, pMap, 6, 6, pOutBuffer, 24);
 
 	// handle too small buffer
 
