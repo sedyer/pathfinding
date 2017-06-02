@@ -5,6 +5,7 @@
 #include <list>  
 #include <map>
 #include <cmath>
+#include <float.h>
 
 using namespace std;
 
@@ -96,18 +97,20 @@ class pathfinding {
 		return pMap[index] == 1;
 	}
 
-	int getMinIndex(map<int, double>& map) {
+	int getMinIndexInSet(map<int, double>& map, list<int>& set) {
 
-		int lowestIndex = 0;
-		double lowestValue = map.begin()->second;
+		int lowestIndex = set.back();
+		double lowestFScore = getWithDefault(map, lowestIndex, DBL_MAX);
 
-		for each (pair<int, double> pair in map)
-		{
-			if (pair.second < lowestValue) {
+		for each (int i in set) {
+			double currentfScore = getWithDefault(map, i, DBL_MAX);
 
-				lowestValue = pair.second;
-				lowestIndex = pair.first;
+			if (currentfScore < lowestFScore) {
+
+				lowestFScore = currentfScore;
+				lowestIndex = i;
 			}
+
 		}
 
 		return lowestIndex;
@@ -139,6 +142,20 @@ class pathfinding {
 		int sumOfSquares = xdiff * xdiff + ydiff * ydiff;
 
 		return sqrt(sumOfSquares);
+	}
+
+	int manhattanDistance(int startIndex, int goalIndex, int width) {
+
+		int x1 = getColumn(startIndex, width);
+		int x2 = getColumn(goalIndex, width);
+
+		int y1 = getRow(startIndex, width);
+		int y2 = getRow(goalIndex, width);
+
+		int xdiff = abs(x2 - x1);
+		int ydiff = abs(y2 - y1);
+
+		return xdiff + ydiff;
 	}
 
 public:
@@ -173,11 +190,11 @@ public:
 
 		gScore[startIndex] = 0; //cost of getting from start node to this node
 
-		fScore[startIndex] = estimateCost(startIndex, goalIndex, nMapWidth); //cost of getting from start node to the target node via this one
+		fScore[startIndex] = manhattanDistance(startIndex, goalIndex, nMapWidth); //cost of getting from start node to the target node via this one
 
 		while (openSet.size() != 0)
 		{
-			int currentIndex = getMinIndex(fScore);
+			int currentIndex = getMinIndexInSet(fScore, openSet);
 
 			if (currentIndex == goalIndex) {
 
@@ -205,16 +222,18 @@ public:
 					continue;
 				}
 
+				double tentativeG = getWithDefault(gScore, currentIndex, DBL_MAX);
+
 				if (find(begin(openSet), end(openSet), n) == end(openSet)) {
 					openSet.push_back(n);
 				}
-				else if (gScore[currentIndex] >= gScore[n]) {
+				else if (tentativeG >= getWithDefault(gScore, n, DBL_MAX)) {
 					continue;
 				}
 
 				cameFrom[n] = currentIndex;
-				gScore[n] = gScore[currentIndex];
-				fScore[n] = gScore[n] + estimateCost(n, goalIndex, nMapWidth);
+				gScore[n] = tentativeG;
+				fScore[n] = getWithDefault(gScore, n, DBL_MAX) + manhattanDistance(n, goalIndex, nMapWidth);
 			}
 		}
 
@@ -227,30 +246,33 @@ int main()
 	pathfinding pf;
 
 	unsigned char pMap[] = {
-		1,0,1,1,
-		1,1,0,1,
-		0,1,0,1
+		1,1,1,0,1,1,
+		1,1,1,0,1,1,
+		1,0,1,1,1,1,
+		1,1,1,0,0,1,
+		1,1,1,1,0,1,
+		1,1,1,0,1,1
 	};
 
-	int pOutBuffer[2];
+	int pOutBuffer[24];
 
-	int pathLength = pf.FindPath(0, 0, 1, 2, pMap, 4, 3, pOutBuffer, 12);
+	int pathLength = pf.FindPath(0, 0, 4, 5, pMap, 6, 6, pOutBuffer, 24);
 
 	// handle too small buffer
 
-	int bufferSize = sizeof(pOutBuffer) / sizeof(pOutBuffer[0]);
+	//int bufferSize = sizeof(pOutBuffer) / sizeof(pOutBuffer[0]);
 
-	if (pathLength > bufferSize) {
+	//if (pathLength > bufferSize) {
 
-		int* buffer = new int[pathLength];
+	//	int* buffer = new int[pathLength];
 
-		int newbufferSize = sizeof(buffer) / sizeof(buffer[0]);
+	//	int newbufferSize = sizeof(buffer) / sizeof(buffer[0]);
 
-		pf.FindPath(0, 0, 1, 2, pMap, 4, 3, buffer, pathLength);
+	//	pf.FindPath(0, 0, 1, 2, pMap, 4, 3, buffer, pathLength);
 
-		int stop = 0;
+	//	int stop = 0;
 
-	}
+	//}
 
 	return 0;
 }
