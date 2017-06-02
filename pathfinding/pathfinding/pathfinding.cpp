@@ -132,12 +132,6 @@ class pathfinding {
 		}
 	}
 
-	int getCoordinateHash(int x1, int x2, int y1, int y2) {
-
-	    return hash<string>()(to_string(x1 + x2 + y1 + y2));
-
-	}
-
 	double manhattanDistance(int startIndex, int goalIndex, int width) {
 
 		int x1 = getColumn(startIndex, width);
@@ -149,9 +143,9 @@ class pathfinding {
 		int xdiff = abs(x2 - x1);
 		int ydiff = abs(y2 - y1);
 
-		double hash = getCoordinateHash(x1, x2, y1, y2);
+		double tieBreaker = ((double)rand() / (double)(RAND_MAX)) / 100;
 
-		return xdiff + ydiff + hash;
+		return xdiff + ydiff + tieBreaker;
 	}
 
 public:
@@ -218,7 +212,7 @@ public:
 					continue;
 				}
 
-				double tentativeG = getWithDefault(gScore, currentIndex, DBL_MAX);
+				double tentativeG = getWithDefault(gScore, currentIndex, DBL_MAX) + manhattanDistance(startIndex, n, nMapWidth);
 
 				if (find(begin(openSet), end(openSet), n) == end(openSet)) {
 					openSet.push_back(n);
@@ -241,7 +235,7 @@ int main()
 {
 	pathfinding pf;
 
-	unsigned char pMap[] = {
+	const unsigned char pMap[] = {
 		1,1,1,0,1,1,
 		1,1,1,0,1,1,
 		1,0,1,1,1,1,
@@ -252,7 +246,7 @@ int main()
 
 	int pOutBuffer[24];
 
-	int pathLength = pf.FindPath(0, 1, 4, 5, pMap, 6, 6, pOutBuffer, 24);
+	int pathLength = pf.FindPath(4, 5, 0, 3, pMap, 6, 6, pOutBuffer, 24);
 
 	// handle too small buffer
 
@@ -260,11 +254,11 @@ int main()
 
 	//if (pathLength > bufferSize) {
 
-	//	int* buffer = new int[pathLength];
+	//	int* newBuffer;
 
-	//	int newbufferSize = sizeof(buffer) / sizeof(buffer[0]);
+	//	newBuffer = (int*)alloca(pathLength);
 
-	//	pf.FindPath(0, 0, 1, 2, pMap, 4, 3, buffer, pathLength);
+	//	pathLength = pf.FindPath(4, 5, 0, 3, pMap, 6, 6, newBuffer, pathLength);
 
 	//	int stop = 0;
 
