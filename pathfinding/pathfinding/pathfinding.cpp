@@ -6,6 +6,7 @@
 #include <map>
 #include <cmath>
 #include <float.h>
+#include <string>
 
 using namespace std;
 
@@ -128,20 +129,42 @@ class pathfinding {
 		}
 	}
 
-	double estimateCost(int startIndex, int goalIndex, int width) {
+	//double estimateCost(int startIndex, int goalIndex, int width) {
 
-		int x1 = getColumn(startIndex, width);
-		int x2 = getColumn(goalIndex, width);
+	//	int x1 = getColumn(startIndex, width);
+	//	int x2 = getColumn(goalIndex, width);
 
-		int y1 = getRow(startIndex, width);
-		int y2 = getRow(goalIndex, width);
+	//	int y1 = getRow(startIndex, width);
+	//	int y2 = getRow(goalIndex, width);
 
-		int xdiff = x2 - x1;
-		int ydiff = y2 - y1;
+	//	int xdiff = x2 - x1;
+	//	int ydiff = y2 - y1;
 
-		int sumOfSquares = xdiff * xdiff + ydiff * ydiff;
+	//	int sumOfSquares = xdiff * xdiff + ydiff * ydiff;
 
-		return sqrt(sumOfSquares);
+	//	return sqrt(sumOfSquares);
+	//}
+
+	//double heuristicWithTiebreaker(int startIndex, int goalIndex, int width) {
+
+	//	int x1 = getColumn(startIndex, width);
+	//	int x2 = getColumn(goalIndex, width);
+
+	//	int y1 = getRow(startIndex, width);
+	//	int y2 = getRow(goalIndex, width);
+
+	//	int xdiff = x2 - x1;
+	//	int ydiff = y2 - y1;
+
+	//	int sumOfSquares = xdiff * xdiff + ydiff * ydiff;
+
+	//	return sqrt(sumOfSquares) + getCoordinateHash(x1, x2, y1, y2);
+	//}
+
+	double getCoordinateHash(int x1, int x2, int y1, int y2) {
+
+	    return hash<string>()(to_string(x1 + x2 + y1 + y2));
+
 	}
 
 	int manhattanDistance(int startIndex, int goalIndex, int width) {
@@ -155,7 +178,7 @@ class pathfinding {
 		int xdiff = abs(x2 - x1);
 		int ydiff = abs(y2 - y1);
 
-		return xdiff + ydiff;
+		return xdiff + ydiff + getCoordinateHash(x1, x2, y1, y2);
 	}
 
 public:
