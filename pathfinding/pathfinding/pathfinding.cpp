@@ -8,10 +8,14 @@
 #include <float.h>
 #include <string>
 #include <math.h>
+#include <thread>
+#include <mutex>
 
 using namespace std;
 
 class pathfinding {
+
+	mutex _lock;
 
 	int getIndex(
 		int column,
@@ -188,14 +192,42 @@ public:
 
 			if (currentIndex == goalIndex) {
 
+				_lock.lock();
+
 				reconstructPath(totalPath, cameFrom, currentIndex, startIndex);
 
 				shortestPathLength = totalPath.size();
 
-				for (int i = 0; i < shortestPathLength; i++) {
-					pOutBuffer[i] = totalPath.back();
-					totalPath.pop_back();
+				if (shortestPathLength <= nOutBufferSize) {
+
+					for (int i = 0; i < shortestPathLength; i++) {
+						pOutBuffer[i] = totalPath.back();
+						totalPath.pop_back();
+					}
+
 				}
+				else {
+
+					//path length longer than buffer size, set buffer to invalid values & return failure
+
+					for (int i = 0; i < nOutBufferSize; i++) {
+						pOutBuffer[i] = -1;
+
+					}
+
+					shortestPathLength = -1;
+				}
+
+				for (int i = 0; i < shortestPathLength; i++) {
+
+					cout << to_string(pOutBuffer[i]);
+					cout << " ";
+
+				}
+
+				cout << "\n";
+
+				_lock.unlock();
 
 				break;
 			}
@@ -229,11 +261,33 @@ public:
 
 		return shortestPathLength;
 	}
+
+	thread pathfindingThread(const int nStartX,
+		const int nStartY,
+		const int nTargetX,
+		const int nTargetY,
+		const unsigned char* pMap,
+		const int nMapWidth,
+		const int nMapHeight,
+		int* pOutBuffer,
+		const int nOutBufferSize) {
+
+		return thread([=] { FindPath(nStartX,
+			nStartY,
+			nTargetX,
+			nTargetY,
+			pMap,
+			nMapWidth,
+			nMapHeight,
+			pOutBuffer,
+			nOutBufferSize); });
+
+	}
 };
 
 int main()
 {
-	pathfinding pf;
+	pathfinding *pf = new pathfinding();
 
 	const unsigned char pMap[] = {
 		1,1,1,0,1,1,
@@ -246,23 +300,15 @@ int main()
 
 	int pOutBuffer[24];
 
-	int pathLength = pf.FindPath(4, 5, 0, 3, pMap, 6, 6, pOutBuffer, 24);
+	thread t1 = pf->pathfindingThread(4, 5, 0, 3, ref(pMap), 6, 6, ref(pOutBuffer), 24);
+	thread t2 = pf->pathfindingThread(0, 3, 3, 5, ref(pMap), 6, 6, ref(pOutBuffer), 24);
+	thread t3 = pf->pathfindingThread(2, 0, 2, 4, ref(pMap), 6, 6, ref(pOutBuffer), 24);
+	thread t4 = pf->pathfindingThread(0, 0, 5, 5, ref(pMap), 6, 6, ref(pOutBuffer), 24);
 
-	// handle too small buffer
-
-	//int bufferSize = sizeof(pOutBuffer) / sizeof(pOutBuffer[0]);
-
-	//if (pathLength > bufferSize) {
-
-	//	int* newBuffer;
-
-	//	newBuffer = (int*)alloca(pathLength);
-
-	//	pathLength = pf.FindPath(4, 5, 0, 3, pMap, 6, 6, newBuffer, pathLength);
-
-	//	int stop = 0;
-
-	//}
+	t1.join();
+	t2.join();
+	t3.join();
+	t4.join();
 
 	return 0;
 }
