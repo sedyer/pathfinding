@@ -1,6 +1,4 @@
 #include <stdio.h>
-#include <tchar.h>
-#include <SDKDDKVer.h>
 #include <iostream>
 #include <algorithm>
 #include <list>  
