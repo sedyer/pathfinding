@@ -284,31 +284,3 @@ public:
 
 	}
 };
-
-int main()
-{
-	pathfinding *pf = new pathfinding();
-
-	const unsigned char pMap[] = {
-		1,1,1,0,1,1,
-		1,1,1,0,1,1,
-		1,0,1,1,1,1,
-		1,1,1,0,0,1,
-		1,1,1,1,0,1,
-		1,1,1,0,1,1
-	};
-
-	int pOutBuffer[24];
-
-	thread t1 = pf->pathfindingThread(4, 5, 0, 3, ref(pMap), 6, 6, ref(pOutBuffer), 24);
-	thread t2 = pf->pathfindingThread(0, 3, 3, 5, ref(pMap), 6, 6, ref(pOutBuffer), 24);
-	thread t3 = pf->pathfindingThread(2, 0, 2, 4, ref(pMap), 6, 6, ref(pOutBuffer), 24);
-	thread t4 = pf->pathfindingThread(0, 0, 5, 5, ref(pMap), 6, 6, ref(pOutBuffer), 24);
-
-	t1.join();
-	t2.join();
-	t3.join();
-	t4.join();
-
-	return 0;
-}
